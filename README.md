@@ -83,7 +83,7 @@ Also copy the ``<STYLE>`` tag **content** from his ``index.html`` file to the JS
 
 But why stop there? I am not a 10 year old _scriptkiddie_ hacking away in BASIC anymore.
 
-Let's up the ante
+Let's up the ante. Extend Wordle to play all past words
 
 
 # [more on friday]
