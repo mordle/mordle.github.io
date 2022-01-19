@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><rect rx='0' width='100%' height='100%' fill='gold' stroke='black' stroke-width='12'/><text fill='black' x='47' y='80' font-size='88px' font-family='verdana' text-anchor='middle'>M</text></svg>"
+    />
+    <title>Wordled - A daily word game</title>
+    <link
+      href="images/wordle_logo_32x32.png"
+      rel="icon shortcut"
+      sizes="3232"
+    />
+    <link href="images/wordle_logo_192x192.png" rel="apple-touch-icon" />
+
+    <style>
+      /* Global Styles & Colors */
+      :root {
+        --green: #6aaa64;
+        --darkendGreen: #538d4e;
+        --yellow: #c9b458;
+        --darkendYellow: #b59f3b;
+        --lightGray: #d8d8d8;
+        --gray: #86888a;
+        --darkGray: #939598;
+        --white: #fff;
+        --black: #212121;
+        /* Colorblind colors */
+        --orange: #f5793a;
+        --blue: #85c0f9;
+        font-family: "Clear Sans", "Helvetica Neue", Arial, sans-serif;
+        font-size: 16px;
+        --header-height: 50px;
+        --keyboard-height: 200px;
+        --game-max-width: 500px;
+      }
+      /* Light theme colors */
+      :root {
+        --color-tone-1: #1a1a1b;
+        --color-tone-2: #787c7e;
+        --color-tone-3: #878a8c;
+        --color-tone-4: #d3d6da;
+        --color-tone-5: #edeff1;
+        --color-tone-6: #f6f7f8;
+        --color-tone-7: #ffffff;
+        --opacity-50: rgba(255, 255, 255, 0.5);
+      }
+      /* Dark Theme Colors */
+      .nightmode {
+        --color-tone-1: #d7dadc;
+        --color-tone-2: #818384;
+        --color-tone-3: #565758;
+        --color-tone-4: #3a3a3c;
+        --color-tone-5: #272729;
+        --color-tone-6: #1a1a1b;
+        --color-tone-7: #121213;
+        --opacity-50: rgba(0, 0, 0, 0.5);
+      }
+      /* Constant colors and colors derived from theme */
+      :root,
+      .nightmode {
+        --color-background: var(--color-tone-7);
+      }
+      :root {
+        --color-present: var(--yellow);
+        --color-correct: var(--green);
+        --color-absent: var(--color-tone-2);
+        --tile-text-color: var(--color-tone-7);
+        --key-text-color: var(--color-tone-1);
+        --key-evaluated-text-color: var(--color-tone-7);
+        --key-bg: var(--color-tone-4);
+        --key-bg-present: var(--color-present);
+        --key-bg-correct: var(--color-correct);
+        --key-bg-absent: var(--color-absent);
+        --modal-content-bg: var(--color-tone-7);
+      }
+      .nightmode {
+        --color-present: var(--darkendYellow);
+        --color-correct: var(--darkendGreen);
+        --color-absent: var(--color-tone-4);
+        --tile-text-color: var(--color-tone-1);
+        --key-text-color: var(--color-tone-1);
+        --key-evaluated-text-color: var(--color-tone-1);
+        --key-bg: var(--color-tone-2);
+        --key-bg-present: var(--color-present);
+        --key-bg-correct: var(--color-correct);
+        --key-bg-absent: var(--color-absent);
+        --modal-content-bg: var(--color-tone-7);
+      }
+      .colorblind {
+        --color-correct: var(--orange);
+        --color-present: var(--blue);
+        --tile-text-color: var(--white);
+        --key-bg-present: var(--color-present);
+        --key-bg-correct: var(--color-correct);
+        --key-bg-absent: var(--color-absent);
+      }
+      html {
+        height: 100%;
+      }
+      body {
+        height: 100%;
+        background-color: var(--color-background);
+        margin: 0;
+        padding: 0;
+        /* Prevent scrollbar appearing on page transition */
+        overflow-y: hidden;
+      }
+    </style>
+    <script id="WordleSource"></script>
+    <style>
+      mordle-game {
+        --mordle-background: gold;
+      }
+      /* hide todasy word in UI */
+      mordle-game::before {
+        content: attr(word);
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        transform: scale(-1, 1);
+        color: #ddd;
+        opacity: 0.5;
+        padding: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <mordle-game word="abbey" introduction></mordle-game> -->
+    <mordle-game fword="rebut"></mordle-game>
+    <script>
+      localStorage.removeItem("gameState");
+      //customElements.define("game-toast", class extends HTMLElement{});
+      const __WORDLE_MAIN_SOURCE_CODE__ = "wordle_main_code.js";
+      // HELPER functions
+      const createElement = (tag, props = {}) =>
+        Object.assign(document.createElement(tag), props);
+      // Inject app into pagedri
+      document.body.append(
+        createElement("script", {
+          src: __WORDLE_MAIN_SOURCE_CODE__,
+          onload: function () {
+            // ========================================================
+            console.LOG = console.log;
+            console.log = function (...args) {
+              console.LOG(`%c Mordle `, "background:gold", ...args);
+            };
+            // ========================================================
+            // We will use URL parameters only once, .delete(x) gave me a headache
+            let usedURLParams = [];
+            const URLParams = (x) => {
+              if (usedURLParams.includes(x)) return;
+              let params = new URLSearchParams(document.location.search);
+              usedURLParams.push(x);
+              return params.get(x);
+            };
+
+            // ========================================================
+            customElements.define(
+              "mordle-game",
+              class extends customElements.get("game-app") {
+                static observedAttributes = ["word"];
+                // -----------------------------------------------------
+                get word() {
+                  return (
+                    URLParams("word") ||
+                    this.getAttribute("word") ||
+                    this.solution
+                  );
+                }
+                set word(word) {
+                  this.setAttribute("word", word);
+                }
+                // -----------------------------------------------------
+                gameIntroduction() {
+                  // add to existing title
+                  let title = this.shadowSelect("header .title");
+                  title.innerHTML =
+                    `<div style='font-size:30%;transform:rotate(180deg);margin-top:2px;background:var(--mordle-background,beige);padding:2px'>` +
+                    `play all the words you missed` +
+                    `</div>ELDROW`;
+                  title.style.transform = "rotate(180deg)";
+                  // play Mordle introduction
+                  let sentence = URLParams("sentence");
+                  if (sentence || this.hasAttribute("intro")) {
+                    this.solution = "words";
+                    this.sentence = (
+                      sentence ||
+                      "wacky,coder,danny,hacks,wordl,wordl,lingo,words"
+                    ).split(",");
+                    this.writeWords();
+                  }
+                  this.wordleWordByDate();
+                }
+                // -----------------------------------------------------
+                wordleDate(offset) {
+                  return new Date(
+                    2021,
+                    5, // date when Josh started Wordle
+                    19 + offset
+                  );
+                }
+                wordleWordDaysPast(word) {
+                  return this._wordlewords.indexOf(word);
+                }
+                wordleWordDate(word) {
+                  return this.wordleDate(this.wordleWordDaysPast(word));
+                }
+                wordleWordByDate(date) {
+                  if (URLParams("day")) {
+                    // default date: January, 21
+                    // @Josh, thank you for picking this word for my birthday!
+                    let daysdiff = ~~(
+                      (new Date(
+                        URLParams("year") || "2022",
+                        (URLParams("month") || 1) - 1,
+                        URLParams("day") || 21
+                      ) -
+                        new Date(2021, 5, 19)) /
+                      864e5
+                    );
+                    this.word = this._wordlewords[daysdiff];
+                  }
+                }
+                showWordDate(word = this.word) {
+                  let worddate = this.wordleWordDate(word).toLocaleDateString(
+                    navigator.language,
+                    {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  );
+                  console.log("On", worddate, "play:", word);
+                  // inject the word date with CSS :before pseudo element
+                  this.shadowRoot.append(
+                    createElement("style", {
+                      innerHTML: `#board:before{background:var(--mordle-background,beige);padding:2px;font-size:1.2em;content:"${worddate} \\A ${this.wordleWordDaysPast(
+                        word
+                      )} past words to play";text-align:center;white-space:pre-wrap}`,
+                    })
+                  );
+                }
+                // -----------------------------------------------------
+                connectedCallback() {
+                  console.log("connectedCallback", this.gameStatus, this.word);
+                  this.observeDialog();
+                  super.connectedCallback(); // execute all of World original code
+
+                  this.readDictionary().then(() => {
+                    // trigger attributeChange for todays or history word
+                    this.word = this.getPreviousWord(this.word);
+                    this.gameIntroduction();
+                    console.log("played Mordle words:", this._mordlewords);
+                    // save original method
+                    this.savedEvaluateRowJoshCode = this.evaluateRow;
+                    // and overload with the new method
+                    this.evaluateRow = this.newEvaluateRow;
+
+                    if (this.gameEnded) {
+                      console.log(
+                        "last Mordle word played:",
+                        this._mordlewords
+                      );
+                      this.evaluateRow();
+                    }
+                  });
+                }
+                // -----------------------------------------------------
+                get gameEnded() {
+                  return "WINFAIL".includes(this.gameStatus);
+                }
+                // -----------------------------------------------------
+                newEvaluateRow() {
+                  let guessWord = this.boardState[this.rowIndex];
+                  this.savedEvaluateRowJoshCode(); // Josh's original code incs rowindex
+                  console.log("evaluateRow", guessWord, this.boardState);
+                  if (this.gameEnded) {
+                    this.nextword = this.getPreviousWord(guessWord);
+                  } else {
+                    if (this._dictionary.includes(guessWord)) {
+                      this.continueSentence(2000); // continue intro (when playing)
+                    } else {
+                      this.eraseWord();
+                    }
+                  }
+                }
+                // -----------------------------------------------------
+                continueSentence(msec) {
+                  if (this.sentence && this.sentence.length)
+                    setTimeout(() => this.writeWords(), msec);
+                }
+                // -----------------------------------------------------
+                eraseWord() {
+                  setTimeout(() => {
+                    this.removeLetter();
+                    this.removeLetter();
+                    this.removeLetter();
+                    this.removeLetter();
+                    this.removeLetter();
+                    this.continueSentence(1500);
+                  }, 1000);
+                }
+                // -----------------------------------------------------
+                shadowSelect(s1, s2, s3, s4) {
+                  // blunt way of querySelecting deeper into shadowRoots
+                  // Josh his code we pry into doesn't go deeper than 2 levels.
+                  try {
+                    let el = this.shadowRoot.querySelector(s1);
+                    if (s2) el = el.shadowRoot.querySelector(s2);
+                    return el;
+                  } catch (e) {
+                    //console.warn("no path", s1, s2, "in", this);
+                  }
+                }
+                // -----------------------------------------------------
+                observeDialog() {
+                  // DOM Mutation Observer, so we known when the <game-modal> dialog pops up
+                  // when it does we hide the instructions and inject our Play previous word <button>
+                  console.log("Observing Wordle <game-modal>");
+                  const observer = new MutationObserver(
+                    (mutationsList, observer) => {
+                      for (const mutation of mutationsList) {
+                        let modal = mutation.target;
+                        if (modal.nodeName == "GAME-MODAL") {
+                          let stats = this.shadowSelect(
+                            "game-stats",
+                            ".container"
+                          );
+                          if (stats) {
+                            let button = createElement("button", {
+                              innerHTML: `Play previous word`,
+                              style:
+                                "font-size:2em;background:var(--mordle-background,beige);cursor:pointer",
+                              onkeyup: (evt) => this.restartGame(),
+                              onclick: (evt) => this.restartGame(),
+                            });
+                            let instructions = createElement("div", {
+                              innerHTML: `${
+                                this.wordleWordDaysPast(this.solution) - 1
+                              } past words to play`,
+                              style: "font-size:1.2em",
+                            });
+
+                            stats.prepend(button, instructions);
+                            button.focus();
+                          }
+                          if (!this.hasAttribute("instructions")) {
+                            let help = this.shadowSelect(
+                              "game-help",
+                              ".instructions"
+                            );
+                            if (help) help.style.display = "none";
+                            if (!stats) modal.removeAttribute("open");
+                          }
+
+                          console.log(mutation);
+                        } // if <game-modal>
+                      }
+                    }
+                  );
+                  observer.observe(this.shadowRoot, {
+                    childList: true,
+                    subtree: true,
+                    //attributes: true,
+                  });
+                }
+                // -----------------------------------------------------
+                restartGame(word = this.nextword) {
+                  console.log("RESTART GAME");
+                  // remove Josh his gameState, so re-run is possible
+                  localStorage.removeItem("gameState");
+                  // append new game so Josh his code does all the init code again
+                  document.body.appendChild(
+                    createElement("mordle-game", {
+                      word: word,
+                    })
+                  );
+                  //.setAttribute("instructions", "true");
+                  this.remove(); // remove now old/previous game
+                }
+                // -----------------------------------------------------
+                writeWords(
+                  word = (this.sentence.shift() || "").split(""),
+                  wordle = this
+                ) {
+                  if (word.length)
+                    (function pressLetter() {
+                      wordle.addLetter(word.shift());
+                      if (word.length) setTimeout(pressLetter, 200);
+                      else wordle.submitGuess();
+                    })();
+                }
+                // -----------------------------------------------------
+                getPreviousWord(word) {
+                  // ignore all Mordle words played
+                  let idx = this._wordlewords.indexOf(word);
+                  do {
+                    word = this._wordlewords[idx--];
+                  } while (idx > -1 && this._mordlewords.includes(word));
+                  if (idx == -1) {
+                    console.error(
+                      `You have reached the Big Bang, Josh started Wordle with "${word}" on ${this.wordleWordDate(
+                        word
+                      )}`
+                    );
+                  } else {
+                    //console.warn("playing", word);
+                  }
+                  return word;
+                }
+                // -----------------------------------------------------
+                get ready() {
+                  return this.isConnected && this._mordlewords;
+                }
+                // -----------------------------------------------------
+                attributeChangedCallback(name, oldword, newword) {
+                  if (this.ready) {
+                    console.log("attributeChanged to:", newword);
+                    let gameState = JSON.parse(
+                      localStorage.getItem("gameState")
+                    );
+                    this.solution = gameState.solution = newword;
+                    localStorage.setItem(
+                      "gameState",
+                      JSON.stringify(gameState)
+                    );
+                    this.showWordDate(this.solution);
+                  }
+                }
+                get mordleWords() {
+                  return this._mordlewords || [];
+                }
+                // -----------------------------------------------------
+                async readDictionary() {
+                  let source = await (
+                    await fetch(__WORDLE_MAIN_SOURCE_CODE__)
+                  ).text();
+                  function extractByFirstWord(word) {
+                    let words = source
+                      .split(word)[1]
+                      .split("]")[0]
+                      .replaceAll('"', "")
+                      .replaceAll("\r", "")
+                      .replaceAll("\n", "")
+                      .split(",")
+                      .map((word) => word.trim());
+                    words[0] = word;
+                    return words;
+                  }
+                  this._wordlewords = extractByFirstWord("cigar");
+                  this._dictionary = extractByFirstWord("aahed");
+                  this._mordlewords = (
+                    localStorage.getItem("mordlewords") || ""
+                  ).split(",");
+                  console.log(
+                    `Read ${this._wordlewords.length} Wordle words & ${this._dictionary.length} dictionary words. And ${this._mordlewords.length} Mordle words`
+                  );
+                }
+                // -----------------------------------------------------
+                disconnectedCallback() {
+                  console.log(
+                    "disconnected",
+                    this.gameStatus,
+                    "for word:",
+                    this.solution
+                  );
+                  this._mordlewords.push(this.solution);
+                  localStorage.setItem(
+                    "mordlewords",
+                    [...new Set(this._mordlewords)].join(",")
+                  );
+                } // disconnectedCallback
+              } //
+            ); //
+          }, //   onload
+        }) // <script>
+      ); //
+    </script>
+  </body>
+</html>
