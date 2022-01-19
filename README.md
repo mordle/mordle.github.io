@@ -73,17 +73,20 @@ Using Chromium Browser **sources/snippets** you need only a few lines of code to
 In a JSFiddle you copy all of Josh his JavaScript (from one file) in the JavaSscript section.
 Also copy the ``<STYLE>`` tag **content** from his ``index.html`` file to the JSFiddle CSS section.
 
-{% jsfiddle https://jsfiddle.net/WebComponents/x8eyv1f4/ %}
+{% jsfiddle https://jsfiddle.net/WebComponents/x8eyv1f4 %}
 
 ### Lessons learned:
 
 - Web Components can be **extended** from **existing** Web Components. Most of us call this using a **BaseClass**
+
 - Web Components can be created **after** definition in the DOM, all instances will automagically **upgrade**
 
 But why stop there? I am not a 10 year old _scriptkiddie_ hacking away in BASIC anymore.
 
 Let's up the ante
 
+
+# [more on friday]
 
 
 ### You can't overload Wordles Web Components
