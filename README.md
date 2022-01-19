@@ -1,4 +1,6 @@
-# wordled.github.io
+# Work in Progress, public release on January 21th (Wordle-prick-day)
+
+# mordle.github.io
 
 Best interview with Josh "Wordle" Wardle: https://slate.com/culture/2022/01/wordle-game-creator-wardle-twitter-scores-strategy-stats.html
 
@@ -34,8 +36,6 @@ Too easy... I did that type of changes on BASIC sources way back in 1979 on that
 
 I could have rewritten the app with (slightly) better use of Web Components. But I wanted to keep the code as simple as possible, and I wanted to keep it as close to the original as possible.
 
-https://www.theverge.com/tldr/2022/1/11/22877996/wordle-spoofs-alternatives-letterle-sweardle-queerdle
-
 Why, you ask? Because I wanted to make it as easy as possible to create **YOUR OWN** version of Wordle.
 
 **Using Josh his original code!**
@@ -50,13 +50,30 @@ REMEMBER! I am absolultely **NOT** making ANY changes to Josh his code!
 
 The whole fun of native Web Components is reusability and extensibility. That means you can use the **ORIGINAL** source code and **EXTEND** on it.
 
-![](https://i.imgur.com/VZs9RDO.png)
+1 picture says more than 2 words:
+
+![](https://i.imgur.com/Taw5g55.png)
 
 You DO need knowledge about HOW Web Components **function**. That is why I built my Qomponent Inspector.
 
-But, still, a couple of challenges. Josh did not provide documentation, and his source code is minified.
+But, still, I had challenges challenges. Josh did not provide documentation, and his source code is minified.
 
 ## Your own Wordle solution word
+
+Using Chromium Browser **sources/snippets** you need only a few lines of code to create you own ``<my-game>`` Web Components, which **extends** from Josh his original ``<game-app>`` Web Component.
+
+![](https://i.imgur.com/Vhm0AVH.png)
+
+```
+
+```
+
+## Wordled JSFiddle
+
+In a JSFiddle you copy all of Josh his JavaScript (from one file) in the JavaSscript section.
+Also copy the ``<STYLE>`` tag **content** from his ``index.html`` file to the JSFiddle CSS section.
+
+{% jsfiddle https://jsfiddle.net/WebComponents/x8eyv1f4/ %}
 
 ### Lessons learned:
 
@@ -69,7 +86,7 @@ Let's up the ante
 
 
 
-### Can't overload Wordles Web Components
+### You can't overload Wordles Web Components
 
 ``customElements.define("game-toast", class extends HTMLElement{});``
 
@@ -107,6 +124,8 @@ Learn the Technology first, then find yourself a Tool that does the job better!
   - https://octokatherine.github.io/word-master/ (126 kB)
   - https://61dc4dbf9f2b9d0007925c02--thirsty-hoover-08af60.netlify.app/ (71 kB incomplete UI/UX)
 
+- Funny alternatives:
+  - https://www.theverge.com/tldr/2022/1/11/22877996/wordle-spoofs-alternatives-letterle-sweardle-queerdle
 
 
 # Learning Web Components
@@ -117,4 +136,9 @@ And don't grab a tool and think you are done.
 
 Learn the technology first, then find yourself a tool that does the job better!
 
+_A Fool with a Tool, is still a Fool_
+
 But don't take this from me, I am just an old geezer who in 1979 hit the ESC key on a TRS-80, and learned to program.
+
+![](http://www.trs-80.org/img/salesunits.png)
+
