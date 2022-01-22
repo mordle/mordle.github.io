@@ -1,22 +1,54 @@
 # Work in Progress, public release on January 21th (Wordle-prick-day)
 
-# mordle.github.io
+# More + Wordle = Mordle
+
+## Wordle
+
+
+Josh Wardle his Wordle, has taken the Internet by storm.
+
+Soon people started building clones, my favorite is the [Welsh version](https://www.hiriaith.cymru/gairglo) weighing in at a whopping 2.2 MEGA Byte.
+
+A fun one, is the [multi-player version](https://www.youtube.com/watch?v=uvCl39bemp0).
 
 Best interview with Josh "Wordle" Wardle: https://slate.com/culture/2022/01/wordle-game-creator-wardle-twitter-scores-strategy-stats.html
 
-Multiplayer: https://www.youtube.com/watch?v=uvCl39bemp0
+Even Google joined the hype, with a [Wordle Easter-Egg](https://9to5google.com/2022/01/21/google-wordle-easter-egg/)
 
-2.2MB Welsh version: https://www.hiriaith.cymru/gairglo
 
-And before you send me hate mail; here is the copyright:
+> The most important part might not be its game concept, but the fact that Josh built Wordle with Web Components.
+
+## Web Components are Web Components are Web Components
+
+The whole fun of native Web Components is reusability and extensibility. That means you can use the **ORIGINAL** source code (like a library) and **EXTEND** on it.
+
+1 picture says more than words:
+
+![](https://i.imgur.com/Taw5g55.png)
+
+
+
+You DO need knowledge about HOW Web Components **function**. That is why I built my Qomponent Inspector.
+
+But, still, I had challenges challenges. Josh did not provide documentation, and his source code is minified.
+
+
+
+## Wordle has no license
+
+And before you send me hate mail; here is the copyright from the Wordle source code:
 
 ![](https://i.imgur.com/b96worl.png)
+
+
+## Building Mordle
+
 
 I had heard of Wordle before, but I opened the site only after I heard it was created with Web Components technology.
 
 So after guessing the word of the day, I hit F12 and dove into the source code.
 
-Nothing unfamiliar to me, I have this "hackers" attitude since I first pressed the ESC key on a TRS-80 keyboard to change my high-scores. You can't blame me, I was 10.
+Nothing unfamiliar to me, I have this "hackers" attitude since I first pressed the ESC key on a [TRS-80 Model-I](http://www.trs-80.org/model-1/) keyboard to change my high-scores. You can't blame me, I was 10.
 
 Josh has done a decent job. He uses a hash to name his _one and only_ JavaScript file, so you can't easily link to it, and hijack his code.
 
@@ -42,40 +74,46 @@ Why, you ask? Because I wanted to make it as easy as possible to create **YOUR O
 
 **100% of his original code!**
 
-And when I learned "danny" is a valid Wordle word. I decided to see how far I could get.
 
-REMEMBER! I am absolultely **NOT** making ANY changes to Josh his code!
 
-# Web Components are Web Components are Web Components
-
-The whole fun of native Web Components is reusability and extensibility. That means you can use the **ORIGINAL** source code and **EXTEND** on it.
-
-1 picture says more than 2 words:
-
-![](https://i.imgur.com/Taw5g55.png)
-
-You DO need knowledge about HOW Web Components **function**. That is why I built my Qomponent Inspector.
-
-But, still, I had challenges challenges. Josh did not provide documentation, and his source code is minified.
 
 ## Your own Wordle solution word
 
-Using Chromium Browser **sources/snippets** you need only a few lines of code to create you own ``<my-game>`` Web Components, which **extends** from Josh his original ``<game-app>`` Web Component.
+REMEMBER! I am absolultely **NOT** making ANY changes to Josh his JavaScript code!
+
+Using Chromium Browser **sources/snippets** you need only a few lines of **standard JavaScript code** code to create you own ``<my-game>`` Web Component, which **extends** from Josh his original ``<game-app>`` Web Component.
 
 ![](https://i.imgur.com/Vhm0AVH.png)
 
-```
+## Wordle with a custom word in a JSFiddle
 
-```
+For a JSFiddle you copy all of Josh his JavaScript code (from one file) into the JavaSscript section.
+Also copy the ``<STYLE>`` tag **content** from Josh his ``index.html`` file to the JSFiddle CSS section.
 
-## Wordled JSFiddle
+Then all HTML required is:
 
-In a JSFiddle you copy all of Josh his JavaScript (from one file) in the JavaSscript section.
-Also copy the ``<STYLE>`` tag **content** from his ``index.html`` file to the JSFiddle CSS section.
+````html
+<my-game></my-game>
+<script>
+  window.onload = function() {
+    customElements.define(
+      "my-game",
+      class extends customElements.get("game-app") {
+        connectedCallback() {
+          super.connectedCallback();
+          this.solution = "hacks"; 
+          // click on title to removed saved state, play word again
+          this.shadowRoot.querySelector(".title").onclick = localStorage.removeItem("gameState");
+        }
+      }
+    ); 
+  }
+</script>
+````
 
-{% jsfiddle https://jsfiddle.net/WebComponents/x8eyv1f4 %}
+{% jsfiddle https://jsfiddle.net/WebComponents/x8eyv1f4 result,html,css,javascript %}
 
-### Lessons learned:
+## Lessons learned:
 
 - Web Components can be **extended** from **existing** Web Components. Most of us call this using a **BaseClass**
 
@@ -83,53 +121,76 @@ Also copy the ``<STYLE>`` tag **content** from his ``index.html`` file to the JS
 
 But why stop there? I am not a 10 year old _scriptkiddie_ hacking away in BASIC anymore.
 
-Let's up the ante. Extend Wordle to play all past words
+Let's up the ante. **Extend Wordle to play all past words**
 
 
-# [more on friday]
+## Overloading Josh his methods
 
 
-### You can't overload Wordles Web Components
+The ``<game-app>.evaluateRow()`` method is called every time a new word is entered.	
 
-``customElements.define("game-toast", class extends HTMLElement{});``
+* I can **add** my onw code by saving a reference the original method.
+* declaring my own ``this.newEvaulateRow()`` method, 
 
-Because Josh his code does not do any error checking for existing Component names. The App will just blow up.
+````javascript
+  // save original method
+  this.savedEvaluateRowJoshCode = this.evaluateRow;
+  // and overload with the new method
+  this.evaluateRow = this.newEvaluateRow;
+````
 
-![](https://i.imgur.com/xf6plEx.png)
+* and calling the original method.
+
+````javascript
+  newEvaluateRow() {
+    let guessWord = this.boardState[this.rowIndex];
+  this.savedEvaluateRowJoshCode(); // Josh's original code incs rowindex
+ ````
 
 
-## attributeChangedCallback
+## Make World auto play
 
-This callback **before** the connectedCallback, when there are **observedAttributes** on the Custom Element.
+For ease of use I copied Josh Wardle his **original** source code to Github
 
-So you have to safeguard against premature eja.. eh.. execution with
+https://mordle.github.io/wordle_main_code.js
 
-```
-if(oldValue){
-    ... your code
-}
-```
+With some extra line of script I can now **autoplay** the game.
 
-This is something most Tools shield you from. But remember: _a Fool with a Tool is still a Fool_.
-Learn the Technology first, then find yourself a Tool that does the job better!
+https://mordle.github.io/?sentence=danny,hacks,super,wordle,wordle,lingo,words
 
-# Wordle blogs on the web
 
-- https://dev.to/akaak/wordle-guess-the-hidden-word-in-6-tries-2i4c
-- https://world.hey.com/johnt/reverse-engineering-wordle-4d06a6a1
-- https://24htech.asia/when-will-wordle-end-heres-how-long-you-can-play-the-viral-game-s469296.html
+{% jsfiddle https://jsfiddle.net/WebComponents/bvmnujfg result,html,css,javascript %}
 
-# Wordle on the web
+## What is your birtday Wordle?
 
-- Dutch version https://woordle.nl/ (62 kB, created with Elm)
-- React versions
+With the source code available on Github, it is easy to extract Josh hist dictionaries
 
-  - https://octokatherine.github.io/word-master/ (126 kB)
-  - https://61dc4dbf9f2b9d0007925c02--thirsty-hoover-08af60.netlify.app/ (71 kB incomplete UI/UX)
+````javascript
+  async readDictionary() {
+    let source = await ( await fetch(__WORDLE_MAIN_SOURCE_CODE__) ).text();
 
-- Funny alternatives:
-  - https://www.theverge.com/tldr/2022/1/11/22877996/wordle-spoofs-alternatives-letterle-sweardle-queerdle
+    function extractByFirstWord(word) {
+      let words = source
+      .split(word)[1]
+      .split("]")[0]
+      .replaceAll('"', "")
+      .replaceAll("\r", "")
+      .replaceAll("\n", "")
+      .split(",")
+      .map((word) => word.trim());
+      words[0] = word;
+      return words;
+    }
+    this._wordlewords = extractByFirstWord("cigar");
+    this._dictionary = extractByFirstWord("aahed");
+  }
+````
 
+The Mordle can page back/foward to your birthday, and play the wordle:
+
+https://mordle.github.io/?year=2022&month=1&day=21
+
+Note: you may to clear the ``gameState`` in your browser's local storage to play again.
 
 # Learning Web Components
 
@@ -141,7 +202,8 @@ Learn the technology first, then find yourself a tool that does the job better!
 
 _A Fool with a Tool, is still a Fool_
 
-But don't take this from me, I am just an old geezer who in 1979 hit the ESC key on a TRS-80, and learned to program.
+But don't take this from me, I am just an old geezer who in 1979 hit the ESC key on a [TRS-80 Model-I](http://www.trs-80.org/model-1/), and learned to program.
 
-![](http://www.trs-80.org/img/salesunits.png)
+
+
 
