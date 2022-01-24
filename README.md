@@ -116,7 +116,7 @@ Let's up the ante. **Extend Wordle to play all past words**
 
 The ``<game-app>.evaluateRow()`` method is called every time a new word is entered.	
 
-* I can **add** my onw code by saving a reference the original method.
+* I can **add** my own code by saving a reference to the original method.
 * declaring my own ``this.newEvaulateRow()`` method, 
 
 ```javascript
@@ -131,9 +131,8 @@ The ``<game-app>.evaluateRow()`` method is called every time a new word is enter
 ```javascript
   newEvaluateRow() {
     let guessWord = this.boardState[this.rowIndex];
-  this.savedEvaluateRowJoshCode();
+    this.savedEvaluateRowJoshCode();
 ```
-
 
 ## Make World auto play
 
@@ -141,14 +140,14 @@ For ease of use I copied Josh Wardle his **original** source code to Github
 
 https://mordle.github.io/wordle_main_code.js
 
-With some extra line of script I can now **autoplay** the game:
+With some extra lines of script I can now **autoplay** the game:
 
 **https://mordle.github.io/?sentence=danny,hacks,super,wordle,wordle,lingo,words**
 
 
 ## Or display your birtday Wordle?
 
-With the source code available on Github, it is easy to extract Josh hist dictionaries
+With the source code available on Github, it is easy to extract Josh his dictionaries
 
 ```javascript
   async readDictionary() {
@@ -180,6 +179,8 @@ Note: you may have to clear the ``gameState`` in your browser's local storage to
 ## Playing all past Wordle words
 
 **https://mordle.github.io/ was created from Josh Wardle his BaseClass. Nothing in the _original_ source code was changed**
+
+![](https://i.imgur.com/pBBbQ0d.png)
 
 Have fun extending it.
 
