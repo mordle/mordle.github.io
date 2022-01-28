@@ -1,3 +1,4 @@
+# More + Wordle = Mordle
 # https://mordle.github.io - play all Wordle words you missed
 
 ## Wordle
