@@ -121,7 +121,7 @@
       mordle-game::before {
         content: attr(word);
         position: fixed;
-        bottom: 0;
+        bottom: 25vh;
         right: 0;
         transform: scale(-1, 1);
         color: #ddd;
@@ -301,26 +301,40 @@
                     if (definitionDIV) definitionDIV.remove(); // erase existing definition
                     this.shadowRoot
                       .querySelector(`[letters="${word}"]`) // find word row
-                      .insertAdjacentElement( // add after word row
+                      .insertAdjacentElement(
+                        // add after word row
                         "afterend",
-                        Object.assign(document.createElement("div"), { // create DIV
+                        Object.assign(document.createElement("div"), {
+                          // create DIV
                           id, // with properties
                           innerHTML: `<div style='font-size:0.8em;background:var(--mordle-background,beige);padding:2px'><div>${definition}</div><div><i><b>${meaning}</b></i></div></div>`,
                         })
                       );
                   };
-                  write(`Looking up ${word}... (if the free dictionary is available)`);
+                  let foundInDictionary = false;
+                  // let user know we're lookuing up the word
+                  write(
+                    `Looking up ${word}... (if the free dictionary is available)`
+                  );
+                  setTimeout(() => {
+                    if(!foundInDictionary) write(`Hmm.. Dictionary API is busy...`);
+                  }, 4000);
+                  // public and free Dictionary; I don't know how many calls are allowed
                   fetch(`//api.dictionaryapi.dev/api/v2/entries/en/` + word)
-                    .then((r) => r.json())
+                    .then((response) => response.json())
                     .then((dictionary) => {
                       try {
+                        // wrapped in try/catch to avoid errors
+                        let meanings = dictionary[0].meanings;
+                        // extract FIRST definition
                         let { definition, example } =
-                          dictionary[0].meanings[0].definitions[0];
-                        console.log(`${word} = ${definition} eg: ${example}`);
+                          meanings[0].definitions[0];
+                        console.log(meanings);
                         write(definition, example);
+                        foundInDictionary = true;
                       } catch (e) {
                         write(`No definition found for: ${word}`);
-                        console.error(e);
+                        console.error(e, "\n", dictionary);
                         return;
                       }
                     });
