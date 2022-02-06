@@ -175,17 +175,25 @@
                   this.solution
                 );
               }
-              set word(word) {
+              set word(word = false) {
                 this.setAttribute("word", word);
               }
               // -----------------------------------------------------
               gameIntroduction() {
                 // add to existing title
                 let title = this.shadowSelect("header .title");
-                let style = "font-size:30%;transform:rotate(180deg);margin-top:2px;background:var(--mordle-background,beige);padding:2px";
-                title.innerHTML =
-                  /*html*/`<div style='${style}'>play all the words you missed</div>ELDROW`;
+                let style = `font-size:30%;transform:rotate(180deg);margin-top:2px;background:var(--mordle-background,beige);padding:2px`;
+                title.innerHTML = /*html*/`<div id="mordle_payoff" style="${style}">play all the words you missed</div>ELDROW`;
                 title.style.transform = "rotate(180deg)";
+
+                //! doesn't work yet:
+                this.shadowSelect("#mordle_payoff").addEventListener(
+                  "click",
+                  () => {
+                    this.resetEverything();
+                  }
+                );
+
                 // play Mordle introduction
                 let sentence = URLParams("sentence");
                 if (sentence || this.hasAttribute("intro")) {
@@ -229,6 +237,10 @@
                 }
               }
               showWordDate(word = this.word) {
+                if (word == "undefined" || word == "" || !word) {
+                  word = this._mordlewords.slice(-1)[0];
+                  console.error("no word to show, changed to", word);
+                }
                 let worddate = this.wordleWordDate(word).toLocaleDateString(
                   "en",
                   {
@@ -263,7 +275,12 @@
                 super.connectedCallback(); // execute all of World original code
 
                 this.readDictionary().then(() => {
+                  console.log("read Dictionary", typeof this.word, this._mordlewords);
                   // trigger attributeChange for todays or history word
+                  if (!this.word || this.word=="false") {
+                    this.word = this._mordlewords.slice(-1)[0];
+                    console.error("No word provided, changed to", this.word);
+                  }
                   this.word = this.getPreviousWord(this.word);
                   this.gameIntroduction();
                   console.log("played Mordle words:", this._mordlewords);
@@ -281,6 +298,12 @@
                     this.evaluateRow();
                   }
                 });
+              }
+              resetEverything() {
+                localStorage.removeItem("gameState");
+                localStorage.removeItem("mordlewords");
+                localStorage.removeItem("statistics");
+                this.restartGame();
               }
               // -----------------------------------------------------
               get gameEnded() {
@@ -311,9 +334,9 @@
                 let write = (definition, meaning = "") => {
                   let definitionDIV = this.shadowRoot.querySelector(`#${id}`); // existing definition
                   if (definitionDIV) definitionDIV.remove(); // erase existing definition
-                  this.shadowRoot
-                    .querySelector(`[letters="${word}"]`) // find word row
-                    .insertAdjacentElement(
+                  let wordRow = this.shadowRoot.querySelector(`[letters="${word}"]`);
+                  if (wordRow)
+                    wordRow.insertAdjacentElement(
                       // add after word row
                       "afterend",
                       Object.assign(document.createElement("div"), {
@@ -326,6 +349,9 @@
                           `</div></div>`,
                       })
                     );
+                  else { // no word row
+                    console.log("no word row", word);
+                  }
                 };
                 let foundInDictionary = false;
                 // let user know we're lookuing up the word
@@ -400,6 +426,7 @@
                           ".container"
                         );
                         if (stats) {
+                          // Play previous word button
                           let button = createElement("button", {
                             innerHTML: `Play previous word`,
                             style:
@@ -407,15 +434,17 @@
                             onkeyup: (evt) => this.restartGame(),
                             onclick: (evt) => this.restartGame(),
                           });
+                          // instructions
                           let daysPast = this.wordleWordDaysPast(this.solution) - 1;
                           let instructions = createElement("div", {
                             innerHTML: `${daysPast} past words to play`,
                             style: "font-size:1.2em",
                           });
-
+                          // add Mordle content
                           stats.prepend(button, instructions);
                           button.focus();
                         }
+                        // hide Wordles instructions
                         if (!this.hasAttribute("instructions")) {
                           let help = this.shadowSelect(
                             "game-help",
@@ -424,12 +453,12 @@
                           if (help) help.style.display = "none";
                           if (!stats) modal.removeAttribute("open");
                         }
-
-                        console.log(mutation);
+                        //console.log(mutation);
                       } // if <game-modal>
-                    }
-                  }
-                );
+                    }// for each mutation
+                  }// callback
+                ); // new MutationObserver
+                // attach observer to shadowRoot capturing all child nodes changes
                 observer.observe(this.shadowRoot, {
                   childList: true,
                   subtree: true,
@@ -500,7 +529,7 @@
                 }
               }
               get mordleWords() {
-                return this._mordlewords || [];
+                return (this._mordlewords || []).filter(w => w != '' && w != "false");
               }
               // -----------------------------------------------------
               async readDictionary() {
